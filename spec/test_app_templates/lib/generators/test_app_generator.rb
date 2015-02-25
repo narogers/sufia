@@ -27,4 +27,14 @@ class TestAppGenerator < Rails::Generators::Base
     gsub_file "config/initializers/sufia.rb",
               "config.analytics = false", "config.analytics = true"
   end
+
+  def enable_arkivo_api
+    gsub_file "config/initializers/sufia.rb",
+              "# config.arkivo_api = false", "config.arkivo_api = true"
+  end
+
+  def relax_arkivo_constraint
+    gsub_file 'config/initializers/arkivo_constraint.rb',
+              'return false', 'return true'
+  end
 end

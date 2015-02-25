@@ -33,8 +33,22 @@ module Sufia::User
     mount_uploader :avatar, AvatarUploader, mount_on: :avatar_file_name
     validates_with AvatarValidator
 
+    # Add token to authenticate Arkivo API calls
+    after_initialize :set_arkivo_token, unless: :persisted? if Sufia.config.arkivo_api
+
     has_many :trophies
     attr_accessor :update_directory
+  end
+
+  def set_arkivo_token
+    self.arkivo_token ||= token_algorithm
+  end
+
+  def token_algorithm
+    loop do
+      token = SecureRandom.base64(24)
+      return token if User.find_by(arkivo_token: token).nil?
+    end
   end
 
   # Coerce the ORCID into URL format

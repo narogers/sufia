@@ -1,5 +1,4 @@
 Sufia::Engine.routes.draw do
-
   # Downloads controller route
   resources :homepage, only: 'index'
 
@@ -105,6 +104,16 @@ Sufia::Engine.routes.draw do
   post 'contact' => 'contact_form#create', as: :contact_form_index
   get 'contact' => 'contact_form#new'
 
+  # Arkivo API routes
+  if defined?(Sufia::ArkivoConstraint) && Sufia.config.arkivo_api
+    namespace :api, defaults: { format: :json } do
+      constraints Sufia::ArkivoConstraint do
+        resources :items, except: [:index, :edit, :new]
+      end
+    end
+  end
+
+  # Collections routes
   mount Hydra::Collections::Engine => '/'
 
   # Resque monitoring routes. Don't bother with this route unless Sufia::ResqueAdmin

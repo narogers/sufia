@@ -15,9 +15,10 @@ This generator makes the following changes to your application:
  8. Runs cached stats generator
  9. Runs ORCID field generator
 10. Runs user stats generator
+11. Runs Arkivo generator
        """
   def banner
-    say_status("warning", "GENERATING SUFIA MODELS", :yellow)
+    say_status("info", "GENERATING SUFIA MODELS", :blue)
   end
 
   # Setup the database migrations
@@ -102,5 +103,10 @@ This generator makes the following changes to your application:
   # Adds user stats-related migration & methods
   def user_stats
     generate 'sufia:models:user_stats'
+  end
+
+  # Adds Arkivo API generator
+  def arkivo_api
+    generate 'sufia:models:arkivo_api'
   end
 end

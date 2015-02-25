@@ -8,6 +8,8 @@ require "sufia/version"
 require 'blacklight'
 require 'blacklight_advanced_search'
 require 'sufia/models'
+require 'sufia/inflections'
+require 'sufia/arkivo'
 
 require 'rails_autolink'
 require 'font-awesome-rails'
