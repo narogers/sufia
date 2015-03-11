@@ -27,6 +27,17 @@
     </div>
   </div>
 
+  <% if Sufia.config.arkivo_api %>
+  <div class="form-group">
+    <%= f.label :zotero, class: 'col-xs-4 control-label' do %>
+      <%= zotero_label %>
+    <% end %>
+    <div class="col-xs-8">
+       <%= f.button :zotero, id: "zotero", class: "btn btn-primary" %>
+    </div>
+  </div><!-- .form-group -->
+  <% end %>
+
   <div class="form-group">
     <%= f.label :orcid, class: 'col-xs-4 control-label' do %>
       <%= orcid_label %>
@@ -65,4 +76,3 @@
 <div class="well">
   <%= render 'dashboard/_index_partials/proxy_rights' %>
 </div>
-

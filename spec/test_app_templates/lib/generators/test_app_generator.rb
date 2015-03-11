@@ -37,4 +37,12 @@ class TestAppGenerator < Rails::Generators::Base
     gsub_file 'config/initializers/arkivo_constraint.rb',
               'return false', 'return true'
   end
+
+  def configure_zotero_api
+    gsub_file 'config/zotero.yml', '# zotero:', 'zotero:'
+    gsub_file 'config/zotero.yml', '#   client_key: ZOTERO_API_CLIENT_KEY',
+              '  client_key: <%= ENV["ZOTERO_CLIENT_KEY"] %>'
+    gsub_file 'config/zotero.yml', '#   client_secret: ZOTERO_API_CLIENT_SECRET',
+              '  client_secret: <%= ENV["ZOTERO_CLIENT_SECRET"] %>'
+  end
 end

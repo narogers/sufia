@@ -1,3 +1,4 @@
+require 'sufia/arkivo/config'
 require 'sufia/arkivo/schema_validator'
 require 'sufia/arkivo/metadata_munger'
 require 'sufia/arkivo/actor'

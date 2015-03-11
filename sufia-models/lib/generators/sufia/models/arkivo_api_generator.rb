@@ -4,20 +4,25 @@ class Sufia::Models::ArkivoApiGenerator < Sufia::Models::AbstractMigrationGenera
   source_root File.expand_path('../templates', __FILE__)
 
   desc """
-This generator sets up Arkivo API integration for your application:
+This generator sets up Zotero/Arkivo API integration for your application:
        """
 
   def banner
-    say_status("info", "ADDING ARKIVO API INTEGRATION", :blue)
+    say_status("info", "ADDING ZOTERO/ARKIVO API INTEGRATION", :blue)
   end
 
-  # Copy over the default routing constraint for overriding
+  # Copy the default routing constraint for overriding
   def copy_routing_constraint
     copy_file 'config/arkivo_constraint.rb', 'config/initializers/arkivo_constraint.rb'
   end
 
-  # Setup the database migration
+  # Copy the database migration
   def copy_migration
     better_migration_template 'add_arkivo_token_to_users.rb'
+  end
+
+  # Copy the config file for Zotero client keys
+  def copy_config_file
+    copy_file 'config/zotero.yml', 'config/zotero.yml'
   end
 end

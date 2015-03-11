@@ -1,0 +1,6 @@
+#
+# To integrate your app with Zotero, uncomment the lines below and add your API key information.
+#
+# zotero:
+#   client_key: ZOTERO_API_CLIENT_KEY
+#   client_secret: ZOTERO_API_CLIENT_SECRET
