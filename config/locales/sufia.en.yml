@@ -135,7 +135,7 @@ en:
         label: "ORCID Profile"
       zotero:
         alt: "Zotero icon"
-        label: "Link with Zotero"
+        label: "Zotero"
     batch:
       help:
         title: "Filename will be the default title. Please provide a more meaningful title, and filenames will still be preserved by the system."

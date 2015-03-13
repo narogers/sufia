@@ -43,6 +43,9 @@ module Sufia::UsersControllerBehavior
   def edit
     @user = current_user
     @trophies = @user.trophy_files
+    if Sufia.config.arkivo_api
+      @zotero_token = current_user.zotero_request_token.present?
+    end
   end
 
   # Process changes from profile form
@@ -50,6 +53,23 @@ module Sufia::UsersControllerBehavior
     if params[:user]
       @user.attributes = user_params
       @user.populate_attributes if update_directory?
+    end
+
+    if params[:user][:zotero_pin]
+      request_token = @user.zotero_request_token
+      begin
+        access_token = request_token.get_access_token({ oauth_verifier: params[:user][:zotero_pin] })
+      rescue OAuth::Unauthorized
+        @user.zotero_request_token = nil
+        @user.save
+        redirect_to sufia.edit_profile_path(@user.to_param), notice: 'Please re-authenticate with Zotero'
+      else
+        redirect_to sufia.edit_profile_path(@user.to_param), notice: 'Something went wrong' if access_token.blank?
+      end
+      # parse userID and API key out of token and store in user instance
+      @user.zotero_userid = access_token.params[:userID]
+      @user.zotero_access_token = access_token.params[:oauth_token_secret]
+      @user.save
     end
 
     unless @user.save
@@ -113,7 +133,6 @@ module Sufia::UsersControllerBehavior
       :telephone, :avatar, :group_list, :groups_last_update, :facebook_handle,
       :twitter_handle, :googleplus_handle, :linkedin_handle, :remove_avatar, :orcid)
   end
-
 
   # You can override base_query to return a list of arguments
   def base_query

@@ -10,8 +10,10 @@ describe Sufia::Arkivo do
     let(:client_secret) { '789xyz' }
 
     before do
-      stub_const('ENV', { 'ZOTERO_CLIENT_KEY' => client_key })
-      stub_const('ENV', { 'ZOTERO_CLIENT_SECRET' => client_secret })
+      stub_const('ENV', {
+          'ZOTERO_CLIENT_KEY' => client_key,
+          'ZOTERO_CLIENT_SECRET' => client_secret
+        })
     end
 
     it 'has a client key' do

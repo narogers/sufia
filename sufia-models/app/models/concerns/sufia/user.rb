@@ -1,3 +1,5 @@
+require 'oauth'
+
 module Sufia::User
   extend ActiveSupport::Concern
 
@@ -37,7 +39,15 @@ module Sufia::User
     after_initialize :set_arkivo_token, unless: :persisted? if Sufia.config.arkivo_api
 
     has_many :trophies
-    attr_accessor :update_directory
+    attr_accessor :update_directory, :zotero_pin
+  end
+
+  def zotero_request_token
+    self[:zotero_request_token].blank? ? nil : Marshal::load(self[:zotero_request_token])
+  end
+
+  def zotero_request_token=(value)
+    self[:zotero_request_token] = value.blank? ? value : Marshal::dump(value)
   end
 
   def set_arkivo_token

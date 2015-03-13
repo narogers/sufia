@@ -104,11 +104,25 @@ Sufia::Engine.routes.draw do
   post 'contact' => 'contact_form#create', as: :contact_form_index
   get 'contact' => 'contact_form#new'
 
-  # Arkivo API routes
-  if defined?(Sufia::ArkivoConstraint) && Sufia.config.arkivo_api
-    namespace :api, defaults: { format: :json } do
-      constraints Sufia::ArkivoConstraint do
-        resources :items, except: [:index, :edit, :new]
+  # API routes
+  namespace :api do
+    if Sufia.config.arkivo_api
+      if defined?(Sufia::ArkivoConstraint)
+        constraints Sufia::ArkivoConstraint do
+          resources :items, except: [:index, :edit, :new], defaults: { format: :json }
+        end
+      end
+
+      if defined?(Sufia::ZoteroConstraint)
+        constraints Sufia::ZoteroConstraint do
+          get 'zotero' => 'zotero#initiate', as: :zotero_initiate
+        end
+      end
+
+      if defined?(Sufia::ZoteroCallbackConstraint)
+        constraints Sufia::ZoteroCallbackConstraint do
+          match 'zotero/callback' => 'zotero#callback', as: :zotero_callback, via: [:get, :post]
+        end
       end
     end
   end

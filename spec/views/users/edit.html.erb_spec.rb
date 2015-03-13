@@ -11,13 +11,11 @@ describe 'users/edit.html.erb', type: :view do
     assign(:following, [])
     assign(:trophies, [])
     assign(:events, [])
-    render
   end
 
-  subject { rendered }
-
   it "shows an ORCID field" do
-    expect(subject).to match(/ORCID Profile/)
+    render
+    expect(rendered).to match(/ORCID Profile/)
   end
 
   context 'with Zotero integration enabled' do
@@ -26,7 +24,8 @@ describe 'users/edit.html.erb', type: :view do
     end
 
     it "shows a Zotero OAuth button" do
-      expect(subject).to have_css('button#zotero')
+      render
+      expect(rendered).to have_css('button#zotero')
     end
   end
 
@@ -36,6 +35,7 @@ describe 'users/edit.html.erb', type: :view do
     end
 
     it "hides a Zotero OAuth button" do
+      render
       expect(subject).not_to have_css('button#zotero')
     end
   end

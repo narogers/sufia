@@ -33,7 +33,11 @@
       <%= zotero_label %>
     <% end %>
     <div class="col-xs-8">
-       <%= f.button :zotero, id: "zotero", class: "btn btn-primary" %>
+    <% if @zotero_token && !Rails.env.production? %>
+       <%= f.text_field :zotero_pin, class: "form-control" %>
+    <% else %>
+       <%= link_to "Link with Zotero account", sufia.api_zotero_initiate_path, id: "zotero", class: "btn btn-mini btn-primary" %>
+    <% end %>
     </div>
   </div><!-- .form-group -->
   <% end %>

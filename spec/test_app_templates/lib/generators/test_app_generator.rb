@@ -11,6 +11,10 @@ class TestAppGenerator < Rails::Generators::Base
     generate "browse_everything:config"
   end
 
+  def banner
+    say_status("info", "TEST ENVIRONMENT OVERRIDES", :blue)
+  end
+
   def add_analytics_config
     append_file 'config/analytics.yml' do
       "\n" +
@@ -33,8 +37,12 @@ class TestAppGenerator < Rails::Generators::Base
               "# config.arkivo_api = false", "config.arkivo_api = true"
   end
 
-  def relax_arkivo_constraint
+  def relax_routing_constraints
     gsub_file 'config/initializers/arkivo_constraint.rb',
+              'return false', 'return true'
+    gsub_file 'config/initializers/zotero_constraint.rb',
+              'return false', 'return true'
+    gsub_file 'config/initializers/zotero_callback_constraint.rb',
               'return false', 'return true'
   end
 

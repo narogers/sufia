@@ -1,7 +1,7 @@
 module Sufia
   module Arkivo
     def self.config
-      @config ||= YAML.load(File.read(File.join(Rails.root, 'config', 'zotero.yml')))['zotero']
+      @config ||= YAML.load(ERB.new(IO.read(File.join(Rails.root, 'config', 'zotero.yml'))).result)['zotero']
     end
   end
 end
