@@ -23,9 +23,40 @@ describe 'users/edit.html.erb', type: :view do
       allow(Sufia.config).to receive(:arkivo_api) { true }
     end
 
-    it "shows a Zotero OAuth button" do
-      render
-      expect(rendered).to have_css('button#zotero')
+    it 'shows a Zotero label'
+    it 'shows the Zotero image with alt text'
+
+    context 'with no existing token' do
+      it 'shows a Zotero OAuth button' do
+        render
+        expect(rendered).to have_css('a#zotero')
+      end
+    end
+
+    context 'with an existing token, in the production env' do
+      before do
+        # stub the token behavior
+        # set env to prod
+      end
+
+      it 'shows a Zotero OAuth button' do
+        render
+        expect(rendered).to have_css('a#zotero')
+      end
+    end
+
+    context 'with an existing token, in the dev env' do
+      before do
+        # stub the token behavior
+        # set env to dev
+        # render
+      end
+
+      it 'hides a Zotero OAuth button' do
+        expect(rendered).not_to have_css('a#zotero')
+      end
+
+      it 'shows the zotero_pin text field'
     end
   end
 
@@ -34,9 +65,9 @@ describe 'users/edit.html.erb', type: :view do
       allow(Sufia.config).to receive(:arkivo_api) { false }
     end
 
-    it "hides a Zotero OAuth button" do
+    it 'hides a Zotero OAuth button' do
       render
-      expect(subject).not_to have_css('button#zotero')
+      expect(subject).not_to have_css('a#zotero')
     end
   end
 end

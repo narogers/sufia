@@ -22,6 +22,15 @@ describe User, :type => :model do
     expect(user).to respond_to(:linkedin_handle)
     expect(user).to respond_to(:orcid)
   end
+
+  describe 'Arkivo integration' do
+    it 'sets an Arkivo token after_initialize if API is enabled'
+    it 'does not permit multiple users to have the same token'
+    it 'does not set an Arkivo token is API is disabled'
+    it 'has a custom getter for zotero_request_token'
+    it 'has a custom setter for zotero_request_token='
+  end
+
   describe 'ORCID validation and normalization' do
     it 'saves when a valid bare ORCID is supplied' do
       user.orcid = '0000-0000-1111-2222'

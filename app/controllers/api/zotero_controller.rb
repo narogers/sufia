@@ -25,10 +25,12 @@ module API
     private
 
       def callback_url
-        if Rails.env.development? || Rails.env.test?
-          'oob'
-        else
+        if Rails.env.production?
+          # Zotero should hit the callback URL with the access token
           "#{request.base_url}/api/zotero/callback"
+        else
+          # Zotero can't hit the callback URL, so continue manually
+          'oob'
         end
       end
 

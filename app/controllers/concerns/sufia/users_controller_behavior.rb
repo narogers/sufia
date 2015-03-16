@@ -53,23 +53,23 @@ module Sufia::UsersControllerBehavior
     if params[:user]
       @user.attributes = user_params
       @user.populate_attributes if update_directory?
-    end
 
-    if params[:user][:zotero_pin]
-      request_token = @user.zotero_request_token
-      begin
-        access_token = request_token.get_access_token({ oauth_verifier: params[:user][:zotero_pin] })
-      rescue OAuth::Unauthorized
-        @user.zotero_request_token = nil
+      if params[:user][:zotero_pin]
+        request_token = @user.zotero_request_token
+        begin
+          access_token = request_token.get_access_token({ oauth_verifier: params[:user][:zotero_pin] })
+        rescue OAuth::Unauthorized
+          @user.zotero_request_token = nil
+          @user.save
+          redirect_to sufia.edit_profile_path(@user.to_param), notice: 'Please re-authenticate with Zotero'
+        else
+          redirect_to sufia.edit_profile_path(@user.to_param), notice: 'Something went wrong' if access_token.blank?
+        end
+        # parse userID and API key out of token and store in user instance
+        @user.zotero_userid = access_token.params[:userID]
+        @user.zotero_access_token = access_token.params[:oauth_token_secret]
         @user.save
-        redirect_to sufia.edit_profile_path(@user.to_param), notice: 'Please re-authenticate with Zotero'
-      else
-        redirect_to sufia.edit_profile_path(@user.to_param), notice: 'Something went wrong' if access_token.blank?
       end
-      # parse userID and API key out of token and store in user instance
-      @user.zotero_userid = access_token.params[:userID]
-      @user.zotero_access_token = access_token.params[:oauth_token_secret]
-      @user.save
     end
 
     unless @user.save

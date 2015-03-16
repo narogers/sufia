@@ -92,8 +92,8 @@ describe UsersController, :type => :controller do
       end
     end
   end
-  describe "#edit" do
 
+  describe "#edit" do
     it "show edit form when user edits own profile" do
       get :edit, id: user.user_key
       expect(response).to be_success
@@ -110,7 +110,37 @@ describe UsersController, :type => :controller do
       end
     end
 
-    describe "when the user has trophies" do
+    context 'when the Arkivo API is turned on' do
+      it 'checks if the current user has a request token'
+
+      context 'with the :zotero_pin param provided' do
+        it 'retrieves a Zotero request token'
+
+        context 'with an invalid request token' do
+          before do
+            # raise OAuth::Unauthorized
+          end
+
+          it 'resets the users request token and saves the user'
+          it 'redirects to the edit profile page with reauthN message'
+        end
+
+        context 'with a missing access token' do
+          before do
+            # set the access_token to nil
+          end
+
+          it 'redirects to the edit profile page with "wrong" message'
+        end
+
+        it 'extracts a userID out of the access token and stores it'
+        it 'extracts a secret out of the access token and stores it'
+        it 'saves the user instance'
+        it 'deletes the no-longer-useful Zotero key'
+      end
+    end
+
+    context "when the user has trophies" do
       let(:file1) { GenericFile.create { |f| f.apply_depositor_metadata(user) } }
       let(:file2) { GenericFile.create { |f| f.apply_depositor_metadata(user) } }
       let(:file3) { GenericFile.create { |f| f.apply_depositor_metadata(user) } }
@@ -221,7 +251,7 @@ describe UsersController, :type => :controller do
       end
       it "should remove a trophy" do
         expect {
-          post :update, id: user.user_key,  'remove_trophy_'+file.id => 'yes'
+          post :update, id: user.user_key, 'remove_trophy_'+file.id => 'yes'
         }.to change { user.trophies.count }.by(-1)
         expect(response).to redirect_to(@routes.url_helpers.profile_path(user.to_param))
         expect(flash[:notice]).to include("Your profile has been updated")
