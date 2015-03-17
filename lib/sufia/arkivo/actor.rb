@@ -91,7 +91,6 @@ module Sufia
           tmp.rewind
           tmp
         end
-
     end
   end
 end

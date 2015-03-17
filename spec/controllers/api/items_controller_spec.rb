@@ -285,6 +285,24 @@ describe API::ItemsController, type: :controller do
       end
     end
 
+    context 'with a valid item, matching token, missing resource' do
+      before do
+        allow(GenericFile).to receive(:find).with(deposited_file.id) do
+          raise(ActiveFedora::ObjectNotFoundError)
+        end
+        put :update, id: deposited_file.id, format: :json, item: item
+      end
+
+      subject { response }
+      let(:item) { FactoryGirl.json(:put_item, token: post_token) }
+
+      it { is_expected.to have_http_status(404) }
+
+      it 'provides a reason for refusing to act' do
+        expect(subject.body).to include("id '#{deposited_file.id}' not found")
+      end
+   end
+
     context 'with a valid item, matching token, and unauthorized resource' do
       before do
         allow_any_instance_of(User).to receive(:can?).with(:edit, post_deposited_file) { false }

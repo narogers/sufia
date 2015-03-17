@@ -23,8 +23,16 @@ describe 'users/edit.html.erb', type: :view do
       allow(Sufia.config).to receive(:arkivo_api) { true }
     end
 
-    it 'shows a Zotero label'
-    it 'shows the Zotero image with alt text'
+    it 'shows a Zotero label' do
+      render
+      puts rendered
+      expect(rendered).to match(/Zotero/)
+    end
+
+    it 'shows the Zotero image with alt text' do
+      render
+      expect(rendered).to have_css('img#zotero')
+    end
 
     context 'with no existing token' do
       it 'shows a Zotero OAuth button' do

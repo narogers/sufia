@@ -60,7 +60,7 @@ FactoryGirl.define do
     metadata do
       {
         resourceType: 'Article',
-        title: 'Findings from NSF Study',
+        title: 'THE REAL FINDINGS',
         creators: [
           {
             creatorType: 'author',
