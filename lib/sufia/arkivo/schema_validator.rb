@@ -4,22 +4,35 @@ module Sufia
   module Arkivo
     ITEM_SCHEMA = {
       type: 'object',
-      required: [
-        'token',
-        'metadata',
-        'file'
-      ],
       properties: {
+        token: { type: 'string', required: true },
         metadata: {
-          title: { required: true },
-          creators: { required: true },
-          tags: { required: true },
-          rights: { required: true }
+          type: 'object',
+          required: true,
+          properties: {
+            title: { type: 'string', required: true },
+            creators: { type: 'array', required: true },
+            rights: { type: 'string', required: true },
+            tags: { type: 'array', required: true },
+            resourceType: { type: 'string' },
+            description: { type: 'string' },
+            publisher: { type: 'string' },
+            dateCreated: { type: 'string' },
+            basedNear: { type: 'string' },
+            identifier: { type: 'string' },
+            url: { type: 'string' },
+            language: { type: 'string' }
+          }
         },
         file: {
-          base64: { required: true },
-          md5: { required: true },
-          filename: { required: true }
+          type: 'object',
+          required: true,
+          properties: {
+            base64: { type: 'string', required: true },
+            md5: { type: 'string', required: true },
+            filename: { type: 'string', required: true },
+            contentType: { type: 'string', required: true }
+          }
         }
       }
     }
@@ -35,7 +48,7 @@ module Sufia
       end
 
       def run
-        JSON::Validator.validate!(Sufia::Arkivo::ITEM_SCHEMA, item)
+        JSON::Validator.validate!(Sufia::Arkivo::ITEM_SCHEMA, item, version: :draft3)
       rescue JSON::Schema::ValidationError => exception
         raise Sufia::Arkivo::InvalidItem.new(exception.message)
       end

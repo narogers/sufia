@@ -36,18 +36,21 @@ module Sufia::User
     validates_with AvatarValidator
 
     # Add token to authenticate Arkivo API calls
-    after_initialize :set_arkivo_token, unless: :persisted? if Sufia.config.arkivo_api
+    if Sufia.config.arkivo_api
+      after_initialize :set_arkivo_token, unless: :persisted?
+      attr_accessor :zotero_pin
+    end
 
     has_many :trophies
-    attr_accessor :update_directory, :zotero_pin
+    attr_accessor :update_directory
   end
 
-  def zotero_request_token
-    self[:zotero_request_token].blank? ? nil : Marshal::load(self[:zotero_request_token])
+  def zotero_token
+    self[:zotero_token].blank? ? nil : Marshal::load(self[:zotero_token])
   end
 
-  def zotero_request_token=(value)
-    self[:zotero_request_token] = value.blank? ? value : Marshal::dump(value)
+  def zotero_token=(value)
+    self[:zotero_token] = value.blank? ? value : Marshal::dump(value)
   end
 
   def set_arkivo_token

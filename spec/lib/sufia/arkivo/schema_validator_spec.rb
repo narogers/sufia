@@ -1,15 +1,79 @@
 require 'spec_helper'
 
 describe Sufia::Arkivo::SchemaValidator do
-  it 'ensures a token is included'
-  it 'ensures a metadata section is included'
-  it 'ensures a file section is included'
-  it 'ensures the metadata has a title'
-  it 'ensures the metadata has creators'
-  it 'ensures the metadata has tags'
-  it 'ensures the metadata has rights'
-  it 'ensures the file has a b64-encoded content'
-  it 'ensures the file has a checksum'
-  it 'ensures the file has a filename'
-  it 'raises InvalidItem is the item is invalid'
+  let(:item) { JSON.parse(FactoryGirl.json(:post_item)) }
+
+  it 'ensures a token is included' do
+    expect {
+      described_class.new(item.except('token')).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'token'/)
+  end
+
+  it 'ensures a metadata section is included' do
+    expect {
+      described_class.new(item.except('metadata')).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'metadata'/)
+  end
+
+  it 'ensures a file section is included' do
+    expect {
+      described_class.new(item.except('file')).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'file'/)
+  end
+
+  it 'ensures the metadata has a title' do
+    item['metadata'].delete('title')
+    expect {
+      described_class.new(item).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'title'/)
+  end
+
+  it 'ensures the metadata has creators' do
+    item['metadata'].delete('creators')
+    expect {
+      described_class.new(item).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'creators'/)
+  end
+
+  it 'ensures the metadata has tags' do
+    item['metadata'].delete('tags')
+    expect {
+      described_class.new(item).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'tags'/)
+  end
+
+  it 'ensures the metadata has rights' do
+    item['metadata'].delete('rights')
+    expect {
+      described_class.new(item).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'rights'/)
+  end
+
+  it 'ensures the file has a b64-encoded content' do
+    item['file'].delete('base64')
+    expect {
+      described_class.new(item).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'base64'/)
+  end
+
+  it 'ensures the file has a checksum' do
+    item['file'].delete('md5')
+    expect {
+      described_class.new(item).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'md5'/)
+  end
+
+  it 'ensures the file has a filename' do
+    item['file'].delete('filename')
+    expect {
+      described_class.new(item).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'filename'/)
+  end
+
+  it 'ensures the file has a content type' do
+    item['file'].delete('contentType')
+    expect {
+      described_class.new(item).run
+    }.to raise_error(Sufia::Arkivo::InvalidItem, /required property of 'contentType'/)
+  end
 end

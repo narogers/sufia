@@ -165,7 +165,9 @@ describe SufiaHelper, :type => :helper do
   end
 
   describe '#zotero_label' do
-    it 'works'
+    subject { helper }
+
+    it { is_expected.to respond_to(:zotero_label) }
   end
 
   describe "#number_of_deposits" do

@@ -25,46 +25,62 @@ describe 'users/edit.html.erb', type: :view do
 
     it 'shows a Zotero label' do
       render
-      puts rendered
-      expect(rendered).to match(/Zotero/)
+      expect(rendered).to match(/Zotero Profile/)
     end
 
-    it 'shows the Zotero image with alt text' do
-      render
-      expect(rendered).to have_css('img#zotero')
+    context 'with a userID already set on the user instance' do
+      before do
+        allow(user).to receive(:zotero_userid) { '12345' }
+        render
+      end
+
+      it 'shows a link to the Zotero profile' do
+        expect(rendered).to have_link("Connected!", href: "https://www.zotero.org/users/12345")
+      end
     end
 
     context 'with no existing token' do
+      before { render }
+
       it 'shows a Zotero OAuth button' do
-        render
         expect(rendered).to have_css('a#zotero')
+      end
+
+      it 'hides the zotero_pin text field' do
+        expect(rendered).not_to have_css('input#user_zotero_pin')
       end
     end
 
     context 'with an existing token, in the production env' do
       before do
-        # stub the token behavior
-        # set env to prod
+        assign(:zotero_token, 'foobar')
+        allow(Rails.env).to receive(:production?) { true }
+        render
       end
 
       it 'shows a Zotero OAuth button' do
-        render
         expect(rendered).to have_css('a#zotero')
+      end
+
+      it 'hides the zotero_pin text field' do
+        expect(rendered).not_to have_css('input#user_zotero_pin')
       end
     end
 
     context 'with an existing token, in the dev env' do
       before do
-        # stub the token behavior
-        # set env to dev
-        # render
+        allow(user).to receive(:zotero_token) { 'foobar' }
+        allow(Rails.env).to receive(:production?) { false }
+        render
       end
 
       it 'hides a Zotero OAuth button' do
         expect(rendered).not_to have_css('a#zotero')
       end
 
-      it 'shows the zotero_pin text field'
+      it 'shows the zotero_pin text field' do
+        expect(rendered).to have_css('input#user_zotero_pin')
+      end
     end
   end
 

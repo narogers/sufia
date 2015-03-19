@@ -23,12 +23,36 @@ describe User, :type => :model do
     expect(user).to respond_to(:orcid)
   end
 
-  describe 'Arkivo integration' do
-    it 'sets an Arkivo token after_initialize if API is enabled'
-    it 'does not permit multiple users to have the same token'
-    it 'does not set an Arkivo token is API is disabled'
-    it 'has a custom getter for zotero_request_token'
-    it 'has a custom setter for zotero_request_token='
+  describe 'Arkivo and Zotero integration' do
+    it 'sets an Arkivo token after_initialize if API is enabled' do
+      expect(User.new).to respond_to(:arkivo_token)
+    end
+
+    describe 'Arkivo token generation' do
+      before do
+        allow(SecureRandom).to receive(:base64).with(24).and_return(token1, token1, token2)
+      end
+
+      let(:token1) { 'token1' }
+      let(:token2) { 'token2' }
+
+      it 'generates a new token if a user is found with the existing token' do
+        user1 = User.create(email: 'foo@example.org', password: 'foobarbaz')
+        expect(user1.arkivo_token).to eq token1
+        user2 = User.create(email: 'bar@example.org', password: 'bazquuxquuux')
+        expect(user2.arkivo_token).to eq token2
+      end
+    end
+
+    describe 'Zotero tokens' do
+      let(:token) { 'something' }
+
+      it 'has a custom getter/setter for Zotero request tokens' do
+        user.zotero_token = token
+        expect(user.read_attribute(:zotero_token)).to eq Marshal::dump(token)
+        expect(user.zotero_token).to eq token
+      end
+    end
   end
 
   describe 'ORCID validation and normalization' do

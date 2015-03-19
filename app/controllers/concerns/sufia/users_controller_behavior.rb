@@ -43,9 +43,6 @@ module Sufia::UsersControllerBehavior
   def edit
     @user = current_user
     @trophies = @user.trophy_files
-    if Sufia.config.arkivo_api
-      @zotero_token = current_user.zotero_request_token.present?
-    end
   end
 
   # Process changes from profile form
@@ -55,20 +52,22 @@ module Sufia::UsersControllerBehavior
       @user.populate_attributes if update_directory?
 
       if params[:user][:zotero_pin]
-        request_token = @user.zotero_request_token
+        request_token = @user.zotero_token
         begin
           access_token = request_token.get_access_token({ oauth_verifier: params[:user][:zotero_pin] })
+          # parse userID and API key out of token and store in user instance
+          @user.zotero_userid = access_token.params[:userID]
+          # invalidate the existing request token
         rescue OAuth::Unauthorized
-          @user.zotero_request_token = nil
+          redirect_to sufia.edit_profile_path(@user.to_param), alert: 'Please re-authenticate with Zotero'
+          return
+        rescue NoMethodError
+          redirect_to sufia.edit_profile_path(@user.to_param), alert: 'Something went wrong'
+          return
+        ensure
+          @user.zotero_token = nil
           @user.save
-          redirect_to sufia.edit_profile_path(@user.to_param), notice: 'Please re-authenticate with Zotero'
-        else
-          redirect_to sufia.edit_profile_path(@user.to_param), notice: 'Something went wrong' if access_token.blank?
         end
-        # parse userID and API key out of token and store in user instance
-        @user.zotero_userid = access_token.params[:userID]
-        @user.zotero_access_token = access_token.params[:oauth_token_secret]
-        @user.save
       end
     end
 
