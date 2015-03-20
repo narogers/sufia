@@ -33,24 +33,10 @@ class TestAppGenerator < Rails::Generators::Base
   end
 
   def enable_arkivo_api
-    gsub_file "config/initializers/sufia.rb",
-              "# config.arkivo_api = false", "config.arkivo_api = true"
+    generate 'sufia:models:arkivo_api'
   end
 
-  def relax_routing_constraints
-    gsub_file 'config/initializers/arkivo_constraint.rb',
-              'return false', 'return true'
-    gsub_file 'config/initializers/zotero_constraint.rb',
-              'return false', 'return true'
-    gsub_file 'config/initializers/zotero_callback_constraint.rb',
-              'return false', 'return true'
-  end
-
-  def configure_zotero_api
-    gsub_file 'config/zotero.yml', '# zotero:', 'zotero:'
-    gsub_file 'config/zotero.yml', '#   client_key: ZOTERO_API_CLIENT_KEY',
-              '  client_key: <%= ENV["ZOTERO_CLIENT_KEY"] %>'
-    gsub_file 'config/zotero.yml', '#   client_secret: ZOTERO_API_CLIENT_SECRET',
-              '  client_secret: <%= ENV["ZOTERO_CLIENT_SECRET"] %>'
+  def relax_routing_constraint
+    gsub_file 'config/initializers/arkivo_constraint.rb', 'false', 'true'
   end
 end

@@ -113,17 +113,8 @@ Sufia::Engine.routes.draw do
         end
       end
 
-      if defined?(Sufia::ZoteroConstraint)
-        constraints Sufia::ZoteroConstraint do
-          get 'zotero' => 'zotero#initiate', as: :zotero_initiate
-        end
-      end
-
-      if defined?(Sufia::ZoteroCallbackConstraint)
-        constraints Sufia::ZoteroCallbackConstraint do
-          match 'zotero/callback' => 'zotero#callback', as: :zotero_callback, via: [:get, :post]
-        end
-      end
+      get 'zotero' => 'zotero#initiate', as: :zotero_initiate
+      get 'zotero/callback' => 'zotero#callback', as: :zotero_callback
     end
   end
 

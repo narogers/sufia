@@ -128,68 +128,6 @@ describe UsersController, :type => :controller do
   end
 
   describe "#update" do
-    context 'when the Arkivo API is turned on' do
-      before do
-        allow(Sufia.config).to receive(:arkivo_api) { true }
-      end
-
-      context 'with the :zotero_pin param provided' do
-        let(:request_token) { double('request') }
-        let(:controller_params) { { zotero_pin: 'whatever' } }
-
-        before do
-          allow_any_instance_of(User).to receive(:zotero_token) { request_token }
-        end
-
-        context 'with an invalid request token' do
-          before do
-            allow(request_token).to receive(:get_access_token).and_raise(OAuth::Unauthorized)
-          end
-
-          it 'resets the users request token and saves the user' do
-            expect_any_instance_of(User).to receive(:zotero_token=).with(nil)
-            expect_any_instance_of(User).to receive(:save)
-            post :update, id: user.user_key, user: controller_params
-          end
-
-          it 'redirects to the edit profile page with reauthN message' do
-            post :update, id: user.user_key, user: controller_params
-            expect(response).to redirect_to(@routes.url_helpers.edit_profile_path(user.to_param))
-            expect(flash[:alert]).to eq 'Please re-authenticate with Zotero'
-          end
-        end
-
-        context 'with a missing access token' do
-          before do
-            allow(request_token).to receive(:get_access_token).and_raise(NoMethodError)
-          end
-
-          it 'redirects to the edit profile page with "wrong" message' do
-            post :update, id: user.user_key, user: controller_params
-            expect(response).to redirect_to(@routes.url_helpers.edit_profile_path(user.to_param))
-            expect(flash[:alert]).to eq 'Something went wrong'
-          end
-        end
-
-        context 'with a legitimate token' do
-          let(:access_token) { double('access') }
-          let(:token_params) { { userID: user.user_key, oauth_token_secret: secret  } }
-          let(:secret) { 'shhhhhhh!' }
-
-          before do
-            allow(request_token).to receive(:get_access_token) { access_token }
-            allow(access_token).to receive(:params) { token_params }
-          end
-
-          it 'extracts information out of the access token and saves' do
-            expect_any_instance_of(User).to receive(:zotero_userid=).with(user.user_key)
-            expect_any_instance_of(User).to receive(:save).at_least(:once)
-            post :update, id: user.user_key, user: controller_params
-          end
-        end
-      end
-    end
-
     context "the profile of another user" do
       let(:another_user) { FactoryGirl.create(:user) }
       it "should not allow other users to update" do

@@ -33,8 +33,6 @@
     <div class="col-xs-8">
     <% if @user.zotero_userid.present? %>
        <%= link_to "Connected!", zotero_profile_url(@user.zotero_userid), class: "form-control" %>
-    <% elsif @user.zotero_token.present? && !Rails.env.production? %>
-       <%= f.text_field :zotero_pin, class: "form-control", placeholder: "Enter 20-digit Zotero PIN" %>
     <% else %>
        <%= link_to "Link with Zotero", sufia.api_zotero_initiate_path, id: "zotero", class: "btn btn-mini btn-primary" %>
     <% end %>

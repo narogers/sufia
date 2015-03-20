@@ -45,41 +45,16 @@ describe 'users/edit.html.erb', type: :view do
       it 'shows a Zotero OAuth button' do
         expect(rendered).to have_css('a#zotero')
       end
-
-      it 'hides the zotero_pin text field' do
-        expect(rendered).not_to have_css('input#user_zotero_pin')
-      end
     end
 
     context 'with an existing token, in the production env' do
       before do
-        assign(:zotero_token, 'foobar')
         allow(Rails.env).to receive(:production?) { true }
         render
       end
 
       it 'shows a Zotero OAuth button' do
         expect(rendered).to have_css('a#zotero')
-      end
-
-      it 'hides the zotero_pin text field' do
-        expect(rendered).not_to have_css('input#user_zotero_pin')
-      end
-    end
-
-    context 'with an existing token, in the dev env' do
-      before do
-        allow(user).to receive(:zotero_token) { 'foobar' }
-        allow(Rails.env).to receive(:production?) { false }
-        render
-      end
-
-      it 'hides a Zotero OAuth button' do
-        expect(rendered).not_to have_css('a#zotero')
-      end
-
-      it 'shows the zotero_pin text field' do
-        expect(rendered).to have_css('input#user_zotero_pin')
       end
     end
   end

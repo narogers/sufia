@@ -5,45 +5,154 @@ describe API::ZoteroController, type: :controller do
 
   context 'with an HTTP GET to /api/zotero' do
     context 'with an unauthenticated client' do
-      it 'errors out'
+      before { get :initiate }
+
+      subject { response }
+
+      it { is_expected.to have_http_status(302) }
+      it 'describes the redirect' do
+        expect(flash[:alert]).to eq 'You need to sign in or sign up before continuing.'
+      end
     end
 
-    context 'with a non-local request' do
-      it 'errors out'
+    context 'with an unregistered user' do
+      before do
+        allow_any_instance_of(Ability).to receive(:user_groups) { ['public'] }
+        sign_in user
+        get :initiate
+      end
+
+      subject { response }
+
+      it { is_expected.to have_http_status(302) }
+      it { is_expected.to redirect_to(root_path) }
+      it 'populates the flash with an alert' do
+        expect(flash[:alert]).to eq 'You are not authorized to perform this operation'
+      end
     end
 
     context 'with an invalid key/secret combo' do
-      it 'errors out'
-    end
-
-    describe '#callback_url' do
-      context 'when in the dev environment' do
-        it 'has the expected callback URL'
+      before do
+        allow(Sufia::Arkivo).to receive(:config) { broken_config }
+        sign_in user
+        get :initiate
       end
 
-      context 'when in the production environment' do
-        it 'has the expected callback URL'
+      let(:broken_config) { Hash.new(client_key: 'foo', client_secret: 'bar') }
+
+      subject { response }
+
+      it { is_expected.to have_http_status(302) }
+      it { is_expected.to redirect_to(root_path) }
+      it 'populates the flash with an alert' do
+        expect(flash[:alert]).to eq 'Invalid Zotero client key pair'
       end
     end
 
-    it 'gets a request token'
-    it 'stuffs a request token in the session'
-    it 'stores a request token in the user instance'
-    it 'redirects to the authorize_url (and has identify=1 in it)'
+    describe 'redirects to Zotero' do
+      before do
+        sign_in user
+        get :initiate
+      end
+
+      subject { response }
+
+      it { is_expected.to have_http_status(302) }
+
+      it 'has the expected callback URL' do
+        expect(subject.headers['Location']).to include('oauth_callback=http%3A%2F%2Ftest.host%2Fapi%2Fzotero%2Fcallback')
+      end
+    end
   end
 
   context 'with an HTTP POST/GET to /api/zotero/callback' do
-    context 'with a request not from zotero.org (e.g., localhost)' do
-      it 'errors out'
+    context 'with an unauthenticated user' do
+      before { get :callback }
+
+      subject { response }
+
+      it { is_expected.to have_http_status(302) }
+      it 'describes the redirect' do
+        expect(flash[:alert]).to eq 'You need to sign in or sign up before continuing.'
+      end
     end
 
-    it 'finds a matching request token'
-    it 'errors bad_request if token not provided'
-    it 'finds a user with matching token'
-    it 'errors not_found if no matching token'
-    it 'gets an access token'
-    it 'extracts a userID from the access token'
-    it 'stores the userID in the user instance'
-    it 'nullifies the stored request token'
+    context 'with an unregistered user' do
+      before do
+        allow_any_instance_of(Ability).to receive(:user_groups) { ['public'] }
+        sign_in user
+        get :callback
+      end
+
+      subject { response }
+
+      it { is_expected.to have_http_status(302) }
+      it { is_expected.to redirect_to(root_path) }
+      it 'populates the flash with an alert' do
+        expect(flash[:alert]).to eq 'You are not authorized to perform this operation'
+      end
+    end
+
+    context 'with a request lacking an oauth_token' do
+      before do
+        sign_in user
+        get :callback
+      end
+
+      subject { response }
+
+      it { is_expected.to have_http_status(302) }
+      it { is_expected.to redirect_to(routes.url_helpers.edit_profile_path(user)) }
+      it 'populates the flash with an alert' do
+        expect(flash[:alert]).to eq 'Malformed request from Zotero'
+      end
+    end
+
+    context 'with a non-matching token' do
+      before do
+        sign_in user
+        get :callback, oauth_token: 'woohoo', oauth_verifier: '12345'
+      end
+
+      subject { response }
+
+      it { is_expected.to have_http_status(302) }
+      it { is_expected.to redirect_to(routes.url_helpers.edit_profile_path(user)) }
+      it 'populates the flash with an alert' do
+        expect(flash[:alert]).to eq 'You have not yet connected to Zotero'
+      end
+    end
+
+    context 'with a signed-in, valid user' do
+      before do
+        allow_any_instance_of(User).to receive(:zotero_token) { user_token }
+        sign_in user
+        get :callback, oauth_token: token_string, oauth_verifier: pin
+      end
+
+      let(:token_string) { 'woohoo' }
+      let(:pin) { '12345' }
+      let(:user_token) do
+        double('token',
+          params: { oauth_token: token_string },
+          get_access_token: access_token)
+      end
+      let(:zuserid) { 'myzuser' }
+      let(:access_token) do
+        double('access', params: { userID: zuserid })
+      end
+
+      subject { response }
+
+      it { is_expected.to have_http_status(302) }
+      it { is_expected.to redirect_to(routes.url_helpers.profile_path(user)) }
+      it 'populates the flash with a note' do
+        expect(flash[:alert]).to be_nil
+        expect(flash[:notice]).to eq 'Successfully connected to Zotero!'
+      end
+      it 'stores the userID in the user instance' do
+        expect(user.reload.zotero_userid).to eq zuserid
+      end
+    end
   end
 end

@@ -2,7 +2,9 @@ require 'oauth'
 
 module API
   class ZoteroController < ApplicationController
-    before_filter :validate_token, only: :callback
+    before_filter :authenticate_user!
+    before_filter :authorize_user!
+    before_filter :validate_params, only: :callback
 
     def initiate
       client = ::OAuth::Consumer.new(Sufia::Arkivo.config['client_key'], Sufia::Arkivo.config['client_secret'], options)
@@ -11,34 +13,41 @@ module API
       current_user.zotero_token = request_token
       current_user.save
       redirect_to request_token.authorize_url({ identity: '1', oauth_callback: callback_url })
+    rescue OAuth::Unauthorized
+      redirect_to root_url, alert: 'Invalid Zotero client key pair'
     end
 
     def callback
-      request_token = @user.zotero_token
-      access_token = request_token.get_access_token
+      access_token = current_token.get_access_token({ oauth_verifier: params['oauth_verifier'] })
       # parse userID and API key out of token and store in user instance
-      @user.zotero_userid = access_token.params[:userID]
-      @user.request_token = nil
-      @user.save
+      current_user.zotero_userid = access_token.params[:userID]
+      redirect_to sufia.profile_path(current_user), notice: 'Successfully connected to Zotero!'
+    rescue OAuth::Unauthorized
+      redirect_to sufia.edit_profile_path(current_user.to_param), alert: 'Please re-authenticate with Zotero'
+    ensure
+      current_user.zotero_token = nil
+      current_user.save
     end
 
     private
 
-      def validate_token
-        provided_token = params[:oauth_token]
-        return render plain: "oauth_token param not provided", status: :bad_request if provided_token.blank?
-        @user = User.find_by_zotero_token(provided_token)
-        return render plain: "no matching token found for #{provided_token}", status: :not_found if @user.blank?
+      def authorize_user!
+        authorize! :create, ::GenericFile
+      rescue CanCan::AccessDenied
+        return redirect_to root_url, alert: 'You are not authorized to perform this operation'
+      end
+
+      def validate_params
+        return redirect_to sufia.edit_profile_path(current_user.to_param), alert: "Malformed request from Zotero" if params[:oauth_token].blank? || params[:oauth_verifier].blank?
+        return redirect_to sufia.edit_profile_path(current_user.to_param), alert: "You have not yet connected to Zotero" if !current_token || current_token.params[:oauth_token] != params[:oauth_token]
+      end
+
+      def current_token
+        current_user.zotero_token
       end
 
       def callback_url
-        if Rails.env.production?
-          # Zotero should hit the callback URL with the access token
-          "#{request.base_url}/api/zotero/callback"
-        else
-          # Zotero can't hit the callback URL, so continue manually
-          'oob'
-        end
+        "#{request.base_url}/api/zotero/callback"
       end
 
       def options

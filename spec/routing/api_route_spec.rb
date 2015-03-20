@@ -60,55 +60,15 @@ describe 'routing and paths', type: :routing do
   end
 
   describe 'Zotero' do
-    context 'with a constraint defined' do
-      before do
-        allow(Sufia::ZoteroConstraint).to receive(:matches?) { false }
-      end
-
-      it 'does not recognize routes' do
-        expect(post: '/api/zotero').not_to be_routable
-      end
-    end
-
-    context 'without a constraint defined' do
-      before do
-        allow(Sufia::ZoteroConstraint).to receive(:matches?) { true }
-      end
-
-      it 'does not route POSTs to the zotero resource' do
-        expect(post: '/api/zotero').not_to route_to(controller: 'api/zotero', action: 'initiate')
-      end
-
-      it 'routes GETs to the zotero resource' do
-        expect(get: '/api/zotero').to route_to(controller: 'api/zotero', action: 'initiate')
-      end
+    it 'routes GETs to the zotero resource' do
+      expect(get: '/api/zotero').to route_to(controller: 'api/zotero', action: 'initiate')
     end
   end
 
   describe 'Zotero callbacks' do
-    context 'with a constraint defined' do
-      before do
-        allow(Sufia::ZoteroCallbackConstraint).to receive(:matches?) { false }
-      end
-
-      it 'does not recognize routes' do
-        expect(post: '/api/zotero/callback').not_to be_routable
-      end
+    it 'routes GETs to the callback resource' do
+      expect(get: '/api/zotero/callback').to route_to(controller: 'api/zotero', action: 'callback')
     end
-
-    context 'without a constraint defined' do
-      before do
-        allow(Sufia::ZoteroCallbackConstraint).to receive(:matches?) { true }
-      end
-
-      it 'routes POSTs to the callback resource' do
-        expect(post: '/api/zotero/callback').to route_to(controller: 'api/zotero', action: 'callback')
-      end
-
-      it 'routes GETs to the callback resource' do
-        expect(get: '/api/zotero/callback').to route_to(controller: 'api/zotero', action: 'callback')
-      end
-   end
   end
 
   describe 'path helpers' do

@@ -11,11 +11,15 @@ This generator sets up Zotero/Arkivo API integration for your application:
     say_status("info", "ADDING ZOTERO/ARKIVO API INTEGRATION", :blue)
   end
 
-  # Copy the default routing constraint for overriding
-  def copy_routing_constraints
+  # Turn on the feature set in Sufia's config
+  def enable_arkivo_api
+    gsub_file "config/initializers/sufia.rb",
+              "# config.arkivo_api = false", "config.arkivo_api = true"
+  end
+
+  # Copy the routing constraint over
+  def copy_routing_constraint
     copy_file 'config/arkivo_constraint.rb', 'config/initializers/arkivo_constraint.rb'
-    copy_file 'config/zotero_constraint.rb', 'config/initializers/zotero_constraint.rb'
-    copy_file 'config/zotero_callback_constraint.rb', 'config/initializers/zotero_callback_constraint.rb'
   end
 
   # Copy the database migration

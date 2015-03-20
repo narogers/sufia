@@ -50,25 +50,6 @@ module Sufia::UsersControllerBehavior
     if params[:user]
       @user.attributes = user_params
       @user.populate_attributes if update_directory?
-
-      if params[:user][:zotero_pin]
-        request_token = @user.zotero_token
-        begin
-          access_token = request_token.get_access_token({ oauth_verifier: params[:user][:zotero_pin] })
-          # parse userID and API key out of token and store in user instance
-          @user.zotero_userid = access_token.params[:userID]
-          # invalidate the existing request token
-        rescue OAuth::Unauthorized
-          redirect_to sufia.edit_profile_path(@user.to_param), alert: 'Please re-authenticate with Zotero'
-          return
-        rescue NoMethodError
-          redirect_to sufia.edit_profile_path(@user.to_param), alert: 'Something went wrong'
-          return
-        ensure
-          @user.zotero_token = nil
-          @user.save
-        end
-      end
     end
 
     unless @user.save
