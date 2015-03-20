@@ -4,7 +4,7 @@ describe Sufia::Arkivo do
   it { is_expected.to respond_to(:config) }
 
   describe 'configuration' do
-    subject { Sufia::Arkivo.config }
+    subject { Sufia::Arkivo.reload_config! }
 
     let(:client_key) { 'abc123' }
     let(:client_secret) { '789xyz' }
@@ -15,6 +15,9 @@ describe Sufia::Arkivo do
           'ZOTERO_CLIENT_SECRET' => client_secret
         })
     end
+
+    # Reload the config so other tests don't see the stub_const values
+    after(:context) { Sufia::Arkivo.reload_config! }
 
     it 'has a client key' do
       expect(subject['client_key']).to eq(client_key)

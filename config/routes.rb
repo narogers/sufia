@@ -105,8 +105,8 @@ Sufia::Engine.routes.draw do
   get 'contact' => 'contact_form#new'
 
   # API routes
-  namespace :api do
-    if Sufia.config.arkivo_api
+  if Sufia.config.arkivo_api
+    namespace :api do
       if defined?(Sufia::ArkivoConstraint)
         constraints Sufia::ArkivoConstraint do
           resources :items, except: [:index, :edit, :new], defaults: { format: :json }
