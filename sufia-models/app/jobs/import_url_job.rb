@@ -10,11 +10,24 @@ class ImportUrlJob < ActiveFedoraPidBasedJob
 
   def run
     user = User.find_by_user_key(generic_file.depositor)
+    uri = Addressable::URI.parse(generic_file.import_url)
+
+    spec = {
+      "url" => uri.display_uri,
+      "file_size" => 0,
+    }
+
+    # Get the MIME types from the file name if there is no
+    # header
+    mime_types = MIME::Types.of(uri.basename)
+    mime_type = mime_types.empty? ? "application/octet-stream" : mime_types.first.content_type
 
     Tempfile.open(pid.gsub('/', '_')) do |f|
-      path, mime_type = copy_remote_file(generic_file.import_url, f)
+      retriever = BrowseEverything::Retriever.new
+      retriever.download(spec, f)
+
       # attach downloaded file to generic file stubbed out
-      if Sufia::GenericFile::Actor.new(generic_file, user).create_content(f, path, 'content', mime_type)
+      if Sufia::GenericFile::Actor.new(generic_file, user).create_content(f, uri.basename, 'content', mime_type)
         # add message to user for downloaded file
         message = "The file (#{generic_file.label}) was successfully imported."
         job_user.send_message(user, message, 'File Import')
